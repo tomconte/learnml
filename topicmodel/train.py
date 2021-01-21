@@ -98,7 +98,9 @@ def train_model(corpus, docs, dictionary, args):
         eta='auto',
         iterations=args.iterations,
         num_topics=args.num_topics,
-        passes=args.passes
+        passes=args.passes,
+        eval_every=None,
+        random_state=314159
     )
 
     return model
