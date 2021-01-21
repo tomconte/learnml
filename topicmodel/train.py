@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import re
 
 import nltk
 from azureml.core import Dataset, Run, Workspace
@@ -24,42 +25,52 @@ def get_data(dataset_id):
     return train_docs
 
 
-def preprocess_docs(docs):
+def preprocess_doc(doc):
 
-    # 1. Tokenize the documents.
+    # Remove some stuff before tokenization.
 
-    # Split the documents into tokens.
+    # Remove email addresses.
+    d = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', '', doc)
+
+    # Tokenize the document.
+
+    # Split the document into tokens.
     tokenizer = RegexpTokenizer(r'\w+')
-    for idx in range(len(docs)):
-        docs[idx] = docs[idx].lower()  # Convert to lowercase.
-        docs[idx] = tokenizer.tokenize(docs[idx])  # Split into words.
+    d = d.lower()  # Convert to lowercase.
+    d = tokenizer.tokenize(d) # Split into words.
 
     # Remove numbers, but not words that contain numbers.
-    docs = [[token for token in doc if not token.isnumeric()] for doc in docs]
+    d = [token for token in d if token.isalpha()]
 
     # Remove words that are only one character.
-    docs = [[token for token in doc if len(token) > 1] for doc in docs]
+    d = [token for token in d if len(token) > 1]
 
     # Remove stop words
-    stop_words = set(stopwords.words('english')) 
-    docs = [[token for token in doc if not token in stop_words] for doc in docs]
+    stop_words = set(stopwords.words('english'))
+    stop_words = stop_words.union(['one', 'ax', 'max'])
+    d = [token for token in d if not token in stop_words]
 
-    # 2. Lemmatize the documents.
-
+    # Lemmatize the documents.
     lemmatizer = WordNetLemmatizer()
-    docs = [[lemmatizer.lemmatize(token) for token in doc] for doc in docs]
-
-    # 3. Compute bigrams.
+    d = [lemmatizer.lemmatize(token) for token in d]
 
     # Add bigrams and trigrams to docs (only ones that appear 20 times or more).
-    bigram = Phrases(docs, min_count=20)
-    for idx in range(len(docs)):
-        for token in bigram[docs[idx]]:
-            if '_' in token:
-                # Token is a bigram, add to document.
-                docs[idx].append(token)
+    bigram = Phrases(d, min_count=20)
+    for token in bigram[d]:
+        if '_' in token:
+            # Token is a bigram, add to document.
+            d.append(token)
+    
+    return d
 
-    # 4. Remove rare and common tokens.
+
+def preprocess_docs(docs):
+
+    # Pre-process the documents.
+
+    docs = [preprocess_doc(doc) for doc in docs]
+
+    # Remove rare and common tokens.
 
     # Create a dictionary representation of the documents.
     dictionary = Dictionary(docs)
@@ -67,10 +78,7 @@ def preprocess_docs(docs):
     # Filter out words that occur less than 20 documents, or more than 50% of the documents.
     dictionary.filter_extremes(no_below=20, no_above=0.5)
 
-    # Remove some "bad words"
-    dictionary.filter_tokens(bad_ids=[dictionary.token2id['ax']])
-
-    # Remove most frequent
+    # Remove 5 most frequent
     dictionary.filter_n_most_frequent(5)
     
     # Bag-of-words representation of the documents.
@@ -90,8 +98,7 @@ def train_model(corpus, docs, dictionary, args):
         eta='auto',
         iterations=args.iterations,
         num_topics=args.num_topics,
-        passes=args.passes,
-        eval_every=10
+        passes=args.passes
     )
 
     return model
@@ -133,7 +140,7 @@ def main():
     print('Coherence Score: ', coherence_lda)
 
     run = Run.get_context()
-    run.log(name='c_v', value=coherence_lda)
+    run.log(name='c_v', value=float(coherence_lda))
 
     # Save model & dictionary
     os.makedirs('outputs', exist_ok=True)
