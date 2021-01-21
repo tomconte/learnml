@@ -6,7 +6,7 @@ import re
 import nltk
 from azureml.core import Dataset, Run, Workspace
 from gensim.corpora import Dictionary
-from gensim.models import LdaMulticore, Phrases
+from gensim.models import LdaModel, Phrases
 from gensim.models.coherencemodel import CoherenceModel
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
@@ -90,7 +90,7 @@ def preprocess_docs(docs):
 def train_model(corpus, docs, dictionary, args):
     # Train LDA model.
 
-    model = LdaMulticore(
+    model = LdaModel(
         corpus=corpus,
         id2word=dictionary,
         chunksize=args.chunksize,
