@@ -1,3 +1,5 @@
-.vscode
-.azureml
-.devcontainer
+.vscode/
+.azureml/
+.devcontainer/
+
+node_modules/
