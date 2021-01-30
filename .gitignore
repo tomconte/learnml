@@ -3,3 +3,7 @@
 .devcontainer/
 
 node_modules/
+
+**/.terraform/*
+*.tfstate
+*.tfstate.*
