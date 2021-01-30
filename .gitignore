@@ -3,6 +3,7 @@
 .devcontainer/
 
 node_modules/
+.eslintcache
 
 **/.terraform/*
 *.tfstate
