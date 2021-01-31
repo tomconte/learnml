@@ -9,5 +9,5 @@ jobs:
       - name: Install deps
         run: pip install azureml-core azureml-contrib-functions
       - name: Build and push image
-        run: deploy_image.sh
+        run: bash build_image.sh
         working-directory: fn-topic-model
