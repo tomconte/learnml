@@ -1,0 +1,32 @@
+name: deploy-function
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'topicmodel/**'
+      - 'fn-topic-model/**'
+
+jobs:
+  lint-and-test:
+    environment: dev
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Lint/Test topicmodel
+        run: pylint && pytest
+        working-directory: 'topicmodel'
+
+      - name: Lint/Test fn-topic-model
+        run: pylint && pytest
+        working-directory: 'topicmodel'
