@@ -1,8 +1,16 @@
 #!/bin/bash
 
-registry=af10503475874c0380f75926f9d8df4c.azurecr.io
-image=fn-topic-model
-tag=24
+set -e
+
+if [ $# -ne 3 ]
+then
+  echo "args: registry image tag"
+  exit 1
+fi
+
+registry=$1
+image=$2
+tag=$3
 
 # Remove model if existing
 rm -rf ./score/outputs ./score/score.py
@@ -16,7 +24,10 @@ popd
 cp ../topicmodel/score.py ./score
 
 # Build image
-docker build --tag ${registry}/${image}:${tag} --build-arg function_code_path=${tmp_dir} .
+docker build --tag ${registry}/${image}:${tag} .
 
-# Remove model
+# Push image
+docker push ${registry}/${image}:${tag}
+
+# Remove model & script
 rm -rf ./score/outputs ./score/score.py

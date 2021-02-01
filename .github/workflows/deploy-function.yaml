@@ -1,13 +1,45 @@
 name: deploy-function
+
 on: [push]
+
 jobs:
-  build-image:
+  build-deploy-image:
+    environment: dev
     runs-on: ubuntu-latest
+
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6'
+
       - name: Install deps
         run: pip install azureml-core azureml-contrib-functions
+
+      - name: Log in with Azure
+        uses: azure/login@v1
+        with:
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+
+      - name: Log in to ACR
+        run: az acr login -n ${{ secrets.ACR_SERVER }}
+
+      - name: Setup Azure ML config
+        run: |
+          mkdir -p .azureml
+          echo '${{ secrets.AZUREML_CONFIG }}' > .azureml/config.json
+
       - name: Build and push image
-        run: bash build_image.sh
+        run: bash build_image.sh ${{ secrets.ACR_SERVER }} fn-topic-model $GITHUB_RUN_NUMBER
         working-directory: fn-topic-model
+
+      - name: Update Function app with new image
+        run: |
+          az functionapp config container set -g fmtm-custom -n fmtmcustom -c "${{ secrets.ACR_SERVER }}/fn-topic-model:$GITHUB_RUN_NUMBER"
+          az functionapp stop -g fmtm-custom -n fmtmcustom
+          sleep 3
+          az functionapp start -g fmtm-custom -n fmtmcustom
