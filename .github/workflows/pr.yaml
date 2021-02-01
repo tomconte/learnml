@@ -10,7 +10,6 @@ on:
 
 jobs:
   lint-and-test:
-    environment: dev
     runs-on: ubuntu-latest
 
     steps:
