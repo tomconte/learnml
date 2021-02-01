@@ -23,6 +23,9 @@ jobs:
         with:
           python-version: '3.7'
 
+      - name: Install deps
+        run: pip install pylint pytest
+
       - name: Lint/Test topicmodel
         run: pylint && pytest
         working-directory: 'topicmodel'
