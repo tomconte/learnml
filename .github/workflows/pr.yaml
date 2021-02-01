@@ -27,9 +27,9 @@ jobs:
         run: pip install pylint pytest
 
       - name: Lint/Test topicmodel
-        run: pylint *.py && pytest
-        working-directory: 'topicmodel'
+        run: |
+          pylint topicmodel/*.py
 
       - name: Lint/Test fn-topic-model
-        run: pylint *.py && pytest
-        working-directory: 'topicmodel'
+        run: |
+          pylint fn-topic-model/*.py 
