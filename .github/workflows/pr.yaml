@@ -1,4 +1,4 @@
-name: deploy-function
+name: pr
 
 on:
   pull_request:
