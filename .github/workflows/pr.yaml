@@ -27,8 +27,8 @@ jobs:
 
       - name: Lint/Test topicmodel
         run: |
-          pylint topicmodel/*.py
+          pylint topicmodel
 
       - name: Lint/Test fn-topic-model
         run: |
-          pylint fn-topic-model/*.py 
+          pylint fn-topic-model
