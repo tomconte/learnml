@@ -31,4 +31,4 @@ jobs:
 
       - name: Lint/Test fn-topic-model
         run: |
-          pylint fn-topic-model
+          #pylint fn-topic-model
