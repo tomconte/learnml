@@ -1,23 +1,26 @@
+''' Train the model.'''
+
 import argparse
 import logging
 import os
 import re
 
 import nltk
-from azureml.core import Dataset, Run, Workspace
 from gensim.corpora import Dictionary
 from gensim.models import LdaModel, Phrases
 from gensim.models.coherencemodel import CoherenceModel
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer
+from azureml.core import Dataset, Run
 
 
 def get_data(dataset_id):
+    '''Get the dataset and perform general preparation.'''
     run = Run.get_context()
-    ws = run.experiment.workspace
+    ws = run.experiment.workspace # pylint: disable=invalid-name
     dataset = Dataset.get_by_id(ws, id=dataset_id)
-    df = dataset.to_pandas_dataframe()
+    df = dataset.to_pandas_dataframe() # pylint: disable=invalid-name
     # Keep only text content
     train_docs = df.iloc[:, 2].values
     # Remove empty elements (?)
@@ -26,45 +29,47 @@ def get_data(dataset_id):
 
 
 def preprocess_doc(doc):
+    '''Preprocess a document for training.'''
 
     # Remove some stuff before tokenization.
 
     # Remove email addresses.
-    d = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', '', doc)
+    doc = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', '', doc)
 
     # Tokenize the document.
 
     # Split the document into tokens.
     tokenizer = RegexpTokenizer(r'\w+')
-    d = d.lower()  # Convert to lowercase.
-    d = tokenizer.tokenize(d) # Split into words.
+    doc = doc.lower()  # Convert to lowercase.
+    doc = tokenizer.tokenize(doc) # Split into words.
 
     # Remove numbers, but not words that contain numbers.
-    d = [token for token in d if token.isalpha()]
+    doc = [token for token in doc if token.isalpha()]
 
     # Remove words that are only one character.
-    d = [token for token in d if len(token) > 1]
+    doc = [token for token in doc if len(token) > 1]
 
     # Remove stop words
     stop_words = set(stopwords.words('english'))
     stop_words = stop_words.union(['one', 'ax', 'max'])
-    d = [token for token in d if not token in stop_words]
+    doc = [token for token in doc if not token in stop_words]
 
     # Lemmatize the documents.
     lemmatizer = WordNetLemmatizer()
-    d = [lemmatizer.lemmatize(token) for token in d]
+    doc = [lemmatizer.lemmatize(token) for token in doc]
 
     # Add bigrams and trigrams to docs (only ones that appear 20 times or more).
-    bigram = Phrases(d, min_count=20)
-    for token in bigram[d]:
+    bigram = Phrases(doc, min_count=20)
+    for token in bigram[doc]:
         if '_' in token:
             # Token is a bigram, add to document.
-            d.append(token)
-    
-    return d
+            doc.append(token)
+
+    return doc
 
 
 def preprocess_docs(docs):
+    '''Preprocess all the documents and create dict + corpus.'''
 
     # Pre-process the documents.
 
@@ -80,15 +85,15 @@ def preprocess_docs(docs):
 
     # Remove 5 most frequent
     dictionary.filter_n_most_frequent(5)
-    
+
     # Bag-of-words representation of the documents.
     corpus = [dictionary.doc2bow(doc) for doc in docs]
 
     return corpus, docs, dictionary
 
 
-def train_model(corpus, docs, dictionary, args):
-    # Train LDA model.
+def train_model(corpus, dictionary, args):
+    '''Train the LDA model.'''
 
     model = LdaModel(
         corpus=corpus,
@@ -107,6 +112,7 @@ def train_model(corpus, docs, dictionary, args):
 
 
 def main():
+    '''Main function.'''
 
     # Set up logging
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.DEBUG)
@@ -134,10 +140,14 @@ def main():
     print('Number of documents: %d' % len(corpus))
 
     # Train model
-    model = train_model(corpus, docs, dictionary, args)
+    model = train_model(corpus, dictionary, args)
 
     # Compute and log Coherence Score
-    coherence_model_lda = CoherenceModel(model=model, texts=docs, dictionary=dictionary, coherence='c_v')
+    coherence_model_lda = CoherenceModel(
+        model=model,
+        texts=docs,
+        dictionary=dictionary,
+        coherence='c_v')
     coherence_lda = coherence_model_lda.get_coherence()
     print('Coherence Score: ', coherence_lda)
 
