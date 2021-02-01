@@ -3,7 +3,7 @@ name: deploy-function
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'topicmodel/**'
       - 'fn-topic-model/**'
