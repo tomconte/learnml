@@ -16,7 +16,10 @@ env = Environment.get(workspace=ws, name=env_name)
 
 model = Model(workspace=ws, name=model_name)
 
-inference_config = InferenceConfig(entry_script='./topicmodel/score.py', environment=env)
+inference_config = InferenceConfig(
+    entry_script='score.py',
+    source_directory='./topicmodel',
+    environment=env)
 
 deployment_config = AciWebservice.deploy_configuration(cpu_cores = 1, memory_gb = 1)
 
