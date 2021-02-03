@@ -16,7 +16,10 @@ env = Environment.get(workspace=ws, name=env_name)
 
 model = Model(workspace=ws, name=model_name)
 
-inference_config = InferenceConfig(entry_script='./topicmodel/score.py', environment=env)
+inference_config = InferenceConfig(
+    entry_script='score.py',
+    source_directory='./topicmodel',
+    environment=env)
 
 blob = package(ws, [model], inference_config, functions_enabled=True, trigger=HTTP_TRIGGER)
 
