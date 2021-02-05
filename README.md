@@ -2,6 +2,8 @@
 
 Experimenting with Topic Modeling using [Gensim's LDA implementation](https://radimrehurek.com/gensim//auto_examples/tutorials/run_lda.html) and the [20 Newsgroups](http://qwone.com/~jason/20Newsgroups/) data set; running on Azure Machine Learning.
 
+![LDA-Viz](https://github.com/tomconte/learnml/raw/media/lda-viz.png)
+
 ## `azureml`
 
 Contains the Python scripts used to train and deploy the model, using the Azure ML SDK.
