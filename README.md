@@ -1,6 +1,6 @@
 # Topic Modeling with LDA on Azure Machine Learning
 
-Experimenting with Topic Modeling using [Gensim's LDA implementation](https://radimrehurek.com/gensim//auto_examples/tutorials/run_lda.html) and the [20 Newsgroups](http://qwone.com/~jason/20Newsgroups/) data set; running on Azure Machine Learning.
+Experimenting with Topic Modeling using [Gensim's LDA implementation](https://radimrehurek.com/gensim//auto_examples/tutorials/run_lda.html) and the [20 Newsgroups](http://qwone.com/~jason/20Newsgroups/) data set; running on [Azure Machine Learning](https://docs.microsoft.com/en-us/azure/machine-learning/).
 
 ![LDA-Viz](https://github.com/tomconte/learnml/raw/media/lda-viz.png)
 
